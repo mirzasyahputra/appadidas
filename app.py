@@ -68,8 +68,8 @@ else:
 if menu == "🏠 Beranda":
     st.title("👟 Sistem Pendukung Keputusan (SPK) Penjualan Adidas US")
     st.markdown("""
-    Selamat datang di aplikasi SPK menggunakan algoritma **TOPSIS** dan **WASPAS**.
-    Gunakan menu navigasi di sebelah kiri untuk melihat Dataset, menganalisis Dashboard visual, atau menjalankan algoritma SPK.
+    Selamat datang di aplikasi SPK untuk menentukan **Retailer Terbaik**.
+    Gunakan menu navigasi di sebelah kiri untuk melihat Dataset, menganalisis Dashboard visual secara interaktif, atau menjalankan perhitungan algoritma SPK secara transparan.
     """)
 
 # --- HALAMAN DATASET ---
@@ -91,42 +91,39 @@ elif menu == "📊 Dashboard & Analisis":
     st.title("📊 Dashboard Analisis Penjualan")
     
     if df is not None:
-        # PENGATURAN FILTER DROPDOWN & LOGIKA OTOMATIS
-        st.markdown("### ⚙️ Filter Data")
-        col_f1, col_f2, col_f3 = st.columns(3)
+        st.markdown("### ⚙️ Filter Data (Multi-select)")
+        col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         
         with col_f1:
-            state_opt = ['Semua'] + list(df['State'].dropna().unique())
-            sel_state = st.selectbox("1. Pilih State", state_opt)
+            region_opt = list(df['Region'].dropna().unique())
+            sel_region = st.multiselect("1. Pilih Region", region_opt)
             
-            # Logika Otomatis: Jika State dipilih, Region terisi otomatis
-            if sel_state != 'Semua':
-                auto_region = df[df['State'] == sel_state]['Region'].iloc[0]
-                sel_region = auto_region
-                st.info(f"💡 Region otomatis diset ke: **{auto_region}**")
-            else:
-                region_opt = ['Semua'] + list(df['Region'].dropna().unique())
-                sel_region = st.selectbox("Atau Pilih Region", region_opt)
-
         with col_f2:
-            retailer_opt = ['Semua'] + list(df['Retailer'].dropna().unique())
-            sel_retailer = st.selectbox("2. Pilih Retailer", retailer_opt)
+            # Otomatis menyesuaikan pilihan State berdasarkan Region
+            if sel_region:
+                state_opt = list(df[df['Region'].isin(sel_region)]['State'].dropna().unique())
+            else:
+                state_opt = list(df['State'].dropna().unique())
+            sel_state = st.multiselect("2. Pilih State", state_opt)
 
         with col_f3:
-            sales_meth_opt = ['Semua'] + list(df['Sales Method'].dropna().unique())
-            sel_method = st.selectbox("3. Pilih Metode", sales_meth_opt)
+            retailer_opt = list(df['Retailer'].dropna().unique())
+            sel_retailer = st.multiselect("3. Pilih Retailer", retailer_opt)
 
-        # Menerapkan Filter ke Dataframe
+        with col_f4:
+            sales_meth_opt = list(df['Sales Method'].dropna().unique())
+            sel_method = st.multiselect("4. Pilih Metode", sales_meth_opt)
+
+        # Menerapkan Filter (Jika kosong, tampilkan semua)
         filtered_df = df.copy()
-        if sel_state != 'Semua':
-            filtered_df = filtered_df[filtered_df['State'] == sel_state]
-        elif sel_region != 'Semua':
-            filtered_df = filtered_df[filtered_df['Region'] == sel_region]
-            
-        if sel_retailer != 'Semua':
-            filtered_df = filtered_df[filtered_df['Retailer'] == sel_retailer]
-        if sel_method != 'Semua':
-            filtered_df = filtered_df[filtered_df['Sales Method'] == sel_method]
+        if sel_region:
+            filtered_df = filtered_df[filtered_df['Region'].isin(sel_region)]
+        if sel_state:
+            filtered_df = filtered_df[filtered_df['State'].isin(sel_state)]
+        if sel_retailer:
+            filtered_df = filtered_df[filtered_df['Retailer'].isin(sel_retailer)]
+        if sel_method:
+            filtered_df = filtered_df[filtered_df['Sales Method'].isin(sel_method)]
 
         if filtered_df.empty:
             st.warning("Data kosong dengan kombinasi filter saat ini.")
@@ -157,9 +154,8 @@ elif menu == "📊 Dashboard & Analisis":
                 fig2 = px.bar(df_product, x='Total Sales', y='Product', orientation='h', title="Total Sales per Produk", color='Total Sales', color_continuous_scale='Blues')
                 st.plotly_chart(fig2, use_container_width=True)
                 
-                # REVISI CHART KORELASI (Menggunakan Grouped Bar Chart untuk Top 10 State)
                 df_corr = filtered_df.groupby('State')[['Total Sales', 'Operating Profit']].sum().reset_index()
-                df_corr = df_corr.sort_values('Total Sales', ascending=False).head(10) # Ambil Top 10 agar mudah dibaca
+                df_corr = df_corr.sort_values('Total Sales', ascending=False).head(10)
                 fig4 = px.bar(df_corr, x='State', y=['Total Sales', 'Operating Profit'], 
                               barmode='group', title="Perbandingan Sales vs Profit (Top 10 State)",
                               labels={'value': 'Jumlah ($)', 'variable': 'Metrik'})
@@ -167,89 +163,106 @@ elif menu == "📊 Dashboard & Analisis":
     else:
         st.warning("Silakan muat dataset terlebih dahulu di menu 📂 Dataset.")
 
-# --- HALAMAN SPK (TOPSIS & WASPAS) ---
+# --- HALAMAN SPK (RETAILER TERBAIK) ---
 elif menu == "🏆 Keputusan (SPK)":
-    st.title("🏆 Sistem Pendukung Keputusan")
-    st.markdown("Menentukan alternatif terbaik menggunakan algoritma **TOPSIS** dan **WASPAS**.")
+    st.title("🏆 SPK Penentuan Retailer Terbaik")
+    st.markdown("Sistem membandingkan kinerja Retailer menggunakan metode **TOPSIS** dan **WASPAS** berdasarkan 4 Kriteria Benefit.")
     
     if df is not None:
-        col_r1, col_r2 = st.columns(2)
-        with col_r1:
-            rank_entity = st.selectbox("🎯 Pilih Alternatif yang diuji:", ['Retailer', 'City', 'Product'])
-        with col_r2:
-            algoritma = st.selectbox("⚙️ Pilih Algoritma SPK:", ['Perbandingan Keduanya (TOPSIS & WASPAS)', 'Hanya TOPSIS', 'Hanya WASPAS'])
-
-        st.markdown("**Kriteria Penilaian (Benefit):** C1 (Total Sales), C2 (Operating Profit), C3 (Units Sold), C4 (Avg Margin)")
+        # INPUT BOBOT DINAMIS
+        st.markdown("### 🎛️ Input Bobot Kriteria")
+        st.info("Tentukan tingkat kepentingan (bobot) untuk masing-masing kriteria. Angka akan dinormalisasi secara otomatis.")
+        b1, b2, b3, b4 = st.columns(4)
+        w1 = b1.number_input("C1: Total Sales", min_value=1, max_value=100, value=40)
+        w2 = b2.number_input("C2: Total Units Sold", min_value=1, max_value=100, value=30)
+        w3 = b3.number_input("C3: Operating Profit", min_value=1, max_value=100, value=20)
+        w4 = b4.number_input("C4: Avg Margin", min_value=1, max_value=100, value=10)
         
-        # Persiapan Matriks Keputusan
-        # Mengagregasi data berdasarkan entitas yang dipilih
-        df_matrix = df.groupby(rank_entity).agg(
+        # Normalisasi Bobot agar totalnya 1
+        total_w = w1 + w2 + w3 + w4
+        weights = np.array([w1, w2, w3, w4]) / total_w
+
+        # TAHAP 1: MATRIKS KEPUTUSAN AWAL
+        st.markdown("---")
+        st.markdown("### 📊 Tahap 1: Matriks Keputusan Awal")
+        df_matrix = df.groupby('Retailer').agg(
             C1_Sales=('Total Sales', 'sum'),
-            C2_Profit=('Operating Profit', 'sum'),
-            C3_Units=('Units Sold', 'sum'),
+            C2_Units=('Units Sold', 'sum'),
+            C3_Profit=('Operating Profit', 'sum'),
             C4_Margin=('Operating Margin', 'mean')
         ).reset_index()
         
-        alternatives = df_matrix[rank_entity].values
-        matrix_values = df_matrix[['C1_Sales', 'C2_Profit', 'C3_Units', 'C4_Margin']]
-        
-        # Bobot Kriteria (Misal: C1=40%, C2=30%, C3=20%, C4=10%)
-        weights = np.array([0.40, 0.30, 0.20, 0.10])
-        
-        # ==========================================
-        # IMPLEMENTASI ALGORITMA TOPSIS
-        # ==========================================
-        def calc_topsis(matrix, w):
-            # 1. Normalisasi
-            norm = matrix / np.sqrt((matrix**2).sum())
-            # 2. Normalisasi Terbobot
-            weighted_norm = norm * w
-            # 3. Solusi Ideal (Karena semua kriteria adalah Benefit, max = ideal positif)
-            ideal_pos = weighted_norm.max()
-            ideal_neg = weighted_norm.min()
-            # 4. Jarak ke Solusi Ideal
-            d_pos = np.sqrt(((weighted_norm - ideal_pos)**2).sum(axis=1))
-            d_neg = np.sqrt(((weighted_norm - ideal_neg)**2).sum(axis=1))
-            # 5. Nilai Preferensi (Skor)
-            score = d_neg / (d_pos + d_neg)
-            return score
+        # Tampilkan tabel format yang rapi
+        df_display = df_matrix.copy()
+        df_display['C1_Sales'] = df_display['C1_Sales'].apply(lambda x: f"${x:,.0f}")
+        df_display['C2_Units'] = df_display['C2_Units'].apply(lambda x: f"{x:,.0f}")
+        df_display['C3_Profit'] = df_display['C3_Profit'].apply(lambda x: f"${x:,.0f}")
+        df_display['C4_Margin'] = df_display['C4_Margin'].apply(lambda x: f"{x:.2%}")
+        st.dataframe(df_display, use_container_width=True)
 
-        # ==========================================
-        # IMPLEMENTASI ALGORITMA WASPAS
-        # ==========================================
-        def calc_waspas(matrix, w):
-            # 1. Normalisasi (Untuk kriteria benefit: Nilai / Max)
-            norm = matrix / matrix.max()
-            # 2. WSM (Weighted Sum Model)
-            wsm = (norm * w).sum(axis=1)
-            # 3. WPM (Weighted Product Model) -> Menghindari error nilai 0 dengan menggantinya jadi nilai sangat kecil
-            norm_wpm = norm.replace(0, 1e-6)
-            wpm = 1
-            for i, col in enumerate(norm_wpm.columns):
-                wpm *= norm_wpm[col] ** w[i]
-            # 4. Agregasi (Q) dengan lambda = 0.5
-            score = 0.5 * wsm + 0.5 * wpm
-            return score
+        matrix_vals = df_matrix[['C1_Sales', 'C2_Units', 'C3_Profit', 'C4_Margin']].values
 
-        # Eksekusi Algoritma
-        df_matrix['Skor TOPSIS'] = calc_topsis(matrix_values, weights)
-        df_matrix['Skor WASPAS'] = calc_waspas(matrix_values, weights)
+        # TAHAP 2: MATRIKS NORMALISASI (TOPSIS & WASPAS)
+        st.markdown("### 🧮 Tahap 2: Matriks Normalisasi")
         
-        # Tampilan Hasil TOPSIS
-        if algoritma in ['Hanya TOPSIS', 'Perbandingan Keduanya (TOPSIS & WASPAS)']:
-            st.markdown("### 🥇 Hasil Perankingan TOPSIS")
-            df_topsis = df_matrix[[rank_entity, 'Skor TOPSIS']].sort_values(by='Skor TOPSIS', ascending=False).reset_index(drop=True)
-            df_topsis.index = df_topsis.index + 1
-            st.dataframe(df_topsis.style.highlight_max(subset=['Skor TOPSIS'], color='lightgreen'), use_container_width=True)
-            st.success(f"**Rekomendasi TOPSIS:** {df_topsis.iloc[0][rank_entity]}")
+        # Normalisasi TOPSIS (Akar Kuadrat)
+        norm_topsis = matrix_vals / np.sqrt((matrix_vals**2).sum(axis=0))
+        df_norm_topsis = pd.DataFrame(norm_topsis, columns=['C1 (Norm)', 'C2 (Norm)', 'C3 (Norm)', 'C4 (Norm)'])
+        df_norm_topsis.insert(0, 'Retailer', df_matrix['Retailer'])
 
-        # Tampilan Hasil WASPAS
-        if algoritma in ['Hanya WASPAS', 'Perbandingan Keduanya (TOPSIS & WASPAS)']:
-            st.markdown("### 🥇 Hasil Perankingan WASPAS")
-            df_waspas = df_matrix[[rank_entity, 'Skor WASPAS']].sort_values(by='Skor WASPAS', ascending=False).reset_index(drop=True)
-            df_waspas.index = df_waspas.index + 1
-            st.dataframe(df_waspas.style.highlight_max(subset=['Skor WASPAS'], color='lightblue'), use_container_width=True)
-            st.success(f"**Rekomendasi WASPAS:** {df_waspas.iloc[0][rank_entity]}")
+        # Normalisasi WASPAS (Nilai / Max untuk Kriteria Benefit)
+        norm_waspas = matrix_vals / matrix_vals.max(axis=0)
+        df_norm_waspas = pd.DataFrame(norm_waspas, columns=['C1 (Norm)', 'C2 (Norm)', 'C3 (Norm)', 'C4 (Norm)'])
+        df_norm_waspas.insert(0, 'Retailer', df_matrix['Retailer'])
+
+        c_norm1, c_norm2 = st.columns(2)
+        with c_norm1:
+            st.markdown("**Normalisasi TOPSIS**")
+            st.dataframe(df_norm_topsis.style.format({col: "{:.4f}" for col in df_norm_topsis.columns if col != 'Retailer'}), use_container_width=True)
+        with c_norm2:
+            st.markdown("**Normalisasi WASPAS**")
+            st.dataframe(df_norm_waspas.style.format({col: "{:.4f}" for col in df_norm_waspas.columns if col != 'Retailer'}), use_container_width=True)
+
+        # KALKULASI TOPSIS
+        weighted_norm = norm_topsis * weights
+        ideal_pos = weighted_norm.max(axis=0)
+        ideal_neg = weighted_norm.min(axis=0)
+        d_pos = np.sqrt(((weighted_norm - ideal_pos)**2).sum(axis=1))
+        d_neg = np.sqrt(((weighted_norm - ideal_neg)**2).sum(axis=1))
+        score_topsis = d_neg / (d_pos + d_neg)
+
+        # KALKULASI WASPAS
+        wsm = (norm_waspas * weights).sum(axis=1)
+        norm_waspas_safe = np.where(norm_waspas == 0, 1e-6, norm_waspas) # Menghindari perkalian 0 di WPM
+        wpm = np.prod(norm_waspas_safe ** weights, axis=1)
+        score_waspas = 0.5 * wsm + 0.5 * wpm
+
+        # TAHAP 3: HASIL AKHIR
+        st.markdown("### 🥇 Tahap 3: Hasil Akhir & Perbandingan Ranking")
+        df_final = pd.DataFrame({
+            'Retailer': df_matrix['Retailer'],
+            'Skor TOPSIS': score_topsis,
+            'Skor WASPAS': score_waspas
+        })
+        
+        # Buat Ranking
+        df_final['Ranking TOPSIS'] = df_final['Skor TOPSIS'].rank(ascending=False, method='min').astype(int)
+        df_final['Ranking WASPAS'] = df_final['Skor WASPAS'].rank(ascending=False, method='min').astype(int)
+        
+        # Urutkan berdasarkan Ranking TOPSIS sebagai default tampilan
+        df_final = df_final.sort_values(by='Ranking TOPSIS').reset_index(drop=True)
+        
+        # Tampilkan tabel akhir
+        st.dataframe(df_final.style.format({
+            'Skor TOPSIS': "{:.4f}", 
+            'Skor WASPAS': "{:.4f}"
+        }).background_gradient(subset=['Ranking TOPSIS', 'Ranking WASPAS'], cmap='YlGn_r'), use_container_width=True)
+        
+        # Kesimpulan
+        top_topsis = df_final[df_final['Ranking TOPSIS'] == 1]['Retailer'].values[0]
+        top_waspas = df_final[df_final['Ranking WASPAS'] == 1]['Retailer'].values[0]
+        
+        st.success(f"**KESIMPULAN:** Berdasarkan bobot yang Anda tetapkan, Retailer terbaik menurut metode TOPSIS adalah **{top_topsis}**, dan menurut metode WASPAS adalah **{top_waspas}**.")
 
     else:
          st.warning("Silakan muat dataset terlebih dahulu di menu 📂 Dataset.")
