@@ -256,7 +256,7 @@ elif menu == "🏆 Keputusan (SPK)":
         st.dataframe(df_final.style.format({
             'Skor TOPSIS': "{:.4f}", 
             'Skor WASPAS': "{:.4f}"
-        }).background_gradient(subset=['Ranking TOPSIS', 'Ranking WASPAS'], cmap='YlGn_r'), use_container_width=True)
+        }), use_container_width=True)
         
         # Kesimpulan
         top_topsis = df_final[df_final['Ranking TOPSIS'] == 1]['Retailer'].values[0]
