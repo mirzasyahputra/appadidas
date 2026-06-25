@@ -99,7 +99,6 @@ elif menu == "📊 Dashboard & Analisis":
             sel_region = st.multiselect("1. Pilih Region", region_opt)
             
         with col_f2:
-            # Otomatis menyesuaikan pilihan State berdasarkan Region
             if sel_region:
                 state_opt = list(df[df['Region'].isin(sel_region)]['State'].dropna().unique())
             else:
@@ -114,7 +113,6 @@ elif menu == "📊 Dashboard & Analisis":
             sales_meth_opt = list(df['Sales Method'].dropna().unique())
             sel_method = st.multiselect("4. Pilih Metode", sales_meth_opt)
 
-        # Menerapkan Filter (Jika kosong, tampilkan semua)
         filtered_df = df.copy()
         if sel_region:
             filtered_df = filtered_df[filtered_df['Region'].isin(sel_region)]
@@ -128,7 +126,6 @@ elif menu == "📊 Dashboard & Analisis":
         if filtered_df.empty:
             st.warning("Data kosong dengan kombinasi filter saat ini.")
         else:
-            # KPI
             st.markdown("---")
             k1, k2, k3, k4 = st.columns(4)
             k1.metric("Total Sales", f"${filtered_df['Total Sales'].sum():,.0f}")
@@ -137,7 +134,6 @@ elif menu == "📊 Dashboard & Analisis":
             k4.metric("Total Units", f"{filtered_df['Units Sold'].sum():,.0f}")
             st.markdown("---")
             
-            # Visualisasi
             c1, c2 = st.columns(2)
             with c1:
                 df_monthly = filtered_df.groupby(filtered_df['Invoice Date'].dt.to_period('M'))['Total Sales'].sum().reset_index()
@@ -169,16 +165,21 @@ elif menu == "🏆 Keputusan (SPK)":
     st.markdown("Sistem membandingkan kinerja Retailer menggunakan metode **TOPSIS** dan **WASPAS** berdasarkan 4 Kriteria Benefit.")
     
     if df is not None:
-        # INPUT BOBOT DINAMIS
-        st.markdown("### 🎛️ Input Bobot Kriteria")
-        st.info("Tentukan tingkat kepentingan (bobot) untuk masing-masing kriteria. Angka akan dinormalisasi secara otomatis.")
-        b1, b2, b3, b4 = st.columns(4)
-        w1 = b1.number_input("C1: Total Sales", min_value=1, max_value=100, value=40)
-        w2 = b2.number_input("C2: Total Units Sold", min_value=1, max_value=100, value=30)
-        w3 = b3.number_input("C3: Operating Profit", min_value=1, max_value=100, value=20)
-        w4 = b4.number_input("C4: Avg Margin", min_value=1, max_value=100, value=10)
-        
-        # Normalisasi Bobot agar totalnya 1
+        # IMPLEMENTASI FORM INPUT BOBOT DENGAN TOMBOL UBAH
+        with st.form("panel_bobot"):
+            st.markdown("### 🎛️ Atur Bobot Kriteria")
+            st.markdown("Silakan isi angka bobot kepentingan di bawah ini, lalu klik tombol **Terapkan** untuk menghitung hasil.")
+            
+            b1, b2, b3, b4 = st.columns(4)
+            w1 = b1.number_input("C1: Total Sales", min_value=1, max_value=100, value=40)
+            w2 = b2.number_input("C2: Total Units Sold", min_value=1, max_value=100, value=30)
+            w3 = b3.number_input("C3: Operating Profit", min_value=1, max_value=100, value=20)
+            w4 = b4.number_input("C4: Avg Margin", min_value=1, max_value=100, value=10)
+            
+            # Tombol Ubah yang dicari
+            tombol_terapkan = st.form_submit_button("💾 Terapkan & Hitung Perubahan")
+
+        # Perhitungan hanya berjalan setelah form di-submit atau saat halaman pertama kali dibuka
         total_w = w1 + w2 + w3 + w4
         weights = np.array([w1, w2, w3, w4]) / total_w
 
@@ -192,7 +193,6 @@ elif menu == "🏆 Keputusan (SPK)":
             C4_Margin=('Operating Margin', 'mean')
         ).reset_index()
         
-        # Tampilkan tabel format yang rapi
         df_display = df_matrix.copy()
         df_display['C1_Sales'] = df_display['C1_Sales'].apply(lambda x: f"${x:,.0f}")
         df_display['C2_Units'] = df_display['C2_Units'].apply(lambda x: f"{x:,.0f}")
@@ -202,15 +202,13 @@ elif menu == "🏆 Keputusan (SPK)":
 
         matrix_vals = df_matrix[['C1_Sales', 'C2_Units', 'C3_Profit', 'C4_Margin']].values
 
-        # TAHAP 2: MATRIKS NORMALISASI (TOPSIS & WASPAS)
+        # TAHAP 2: MATRIKS NORMALISASI
         st.markdown("### 🧮 Tahap 2: Matriks Normalisasi")
         
-        # Normalisasi TOPSIS (Akar Kuadrat)
         norm_topsis = matrix_vals / np.sqrt((matrix_vals**2).sum(axis=0))
         df_norm_topsis = pd.DataFrame(norm_topsis, columns=['C1 (Norm)', 'C2 (Norm)', 'C3 (Norm)', 'C4 (Norm)'])
         df_norm_topsis.insert(0, 'Retailer', df_matrix['Retailer'])
 
-        # Normalisasi WASPAS (Nilai / Max untuk Kriteria Benefit)
         norm_waspas = matrix_vals / matrix_vals.max(axis=0)
         df_norm_waspas = pd.DataFrame(norm_waspas, columns=['C1 (Norm)', 'C2 (Norm)', 'C3 (Norm)', 'C4 (Norm)'])
         df_norm_waspas.insert(0, 'Retailer', df_matrix['Retailer'])
@@ -223,7 +221,7 @@ elif menu == "🏆 Keputusan (SPK)":
             st.markdown("**Normalisasi WASPAS**")
             st.dataframe(df_norm_waspas.style.format({col: "{:.4f}" for col in df_norm_waspas.columns if col != 'Retailer'}), use_container_width=True)
 
-        # KALKULASI TOPSIS
+        # KALKULASI ALGORITMA
         weighted_norm = norm_topsis * weights
         ideal_pos = weighted_norm.max(axis=0)
         ideal_neg = weighted_norm.min(axis=0)
@@ -231,9 +229,8 @@ elif menu == "🏆 Keputusan (SPK)":
         d_neg = np.sqrt(((weighted_norm - ideal_neg)**2).sum(axis=1))
         score_topsis = d_neg / (d_pos + d_neg)
 
-        # KALKULASI WASPAS
         wsm = (norm_waspas * weights).sum(axis=1)
-        norm_waspas_safe = np.where(norm_waspas == 0, 1e-6, norm_waspas) # Menghindari perkalian 0 di WPM
+        norm_waspas_safe = np.where(norm_waspas == 0, 1e-6, norm_waspas)
         wpm = np.prod(norm_waspas_safe ** weights, axis=1)
         score_waspas = 0.5 * wsm + 0.5 * wpm
 
@@ -245,24 +242,19 @@ elif menu == "🏆 Keputusan (SPK)":
             'Skor WASPAS': score_waspas
         })
         
-        # Buat Ranking
         df_final['Ranking TOPSIS'] = df_final['Skor TOPSIS'].rank(ascending=False, method='min').astype(int)
         df_final['Ranking WASPAS'] = df_final['Skor WASPAS'].rank(ascending=False, method='min').astype(int)
-        
-        # Urutkan berdasarkan Ranking TOPSIS sebagai default tampilan
         df_final = df_final.sort_values(by='Ranking TOPSIS').reset_index(drop=True)
         
-        # Tampilkan tabel akhir
         st.dataframe(df_final.style.format({
             'Skor TOPSIS': "{:.4f}", 
             'Skor WASPAS': "{:.4f}"
         }), use_container_width=True)
         
-        # Kesimpulan
         top_topsis = df_final[df_final['Ranking TOPSIS'] == 1]['Retailer'].values[0]
         top_waspas = df_final[df_final['Ranking WASPAS'] == 1]['Retailer'].values[0]
         
-        st.success(f"**KESIMPULAN:** Berdasarkan bobot yang Anda tetapkan, Retailer terbaik menurut metode TOPSIS adalah **{top_topsis}**, dan menurut metode WASPAS adalah **{top_waspas}**.")
+        st.success(f"**KESIMPULAN BIROKRASI SPK:** Berdasarkan nilai bobot aktif, Retailer terbaik menurut metode TOPSIS adalah **{top_topsis}**, dan menurut metode WASPAS adalah **{top_waspas}**.")
 
     else:
          st.warning("Silakan muat dataset terlebih dahulu di menu 📂 Dataset.")
