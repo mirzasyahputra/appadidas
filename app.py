@@ -72,17 +72,15 @@ menu = st.sidebar.radio(
 # --- 1. BERANDA ---
 if menu == "🏠 Beranda":
     st.title("Sistem Pendukung Keputusan & Dashboard Penjualan Adidas US")
-    st.markdown("""
-    Aplikasi ini dirancang khusus untuk menganalisis performa bisnis retail Adidas di Amerika Serikat sekaligus bertindak sebagai platform penunjang keputusan taktis penentuan mitra retail terbaik.
+    st.markdown("Aplikasi ini dirancang khusus untuk menganalisis performa bisnis retail Adidas di Amerika Serikat sekaligus bertindak sebagai platform penunjang keputusan taktis penentuan mitra retail terbaik.")
+    st.markdown("### Fitur Utama Sistem:")
+    st.markdown("* **Visualisasi Data Eksekutif:** Menjawab pertanyaan bisnis fundamental perusahaan secara tertulis dan infografis.")
+    st.markdown("* **Analisis Multi-Metode SPK:** Menyediakan modul perhitungan matematis transparan langkah demi langkah menggunakan algoritma **WASPAS** dan **TOPSIS**.")
+    st.markdown("* **Komparasi Konsistensi:** Menampilkan tabel integrasi peringkat akhir guna memvalidasi keputusan investasi korporat secara objektif.")
+    st.markdown("### Nama Anggota Kelompok:")
+    st.markdown("* Mirza Fazle Rabbi Syahputra - 322410013")
+    st.markdown("* Jeremia Valerian Lumban Gaol - 322410008")
     
-    ### Fitur Utama Sistem:
-    * **Visualisasi Data Eksekutif:** Menjawab pertanyaan bisnis fundamental perusahaan secara tertulis dan infografis.
-    * **Analisis Multi-Metode SPK:** Menyediakan modul perhitungan matematis transparan langkah demi langkah menggunakan algoritma **WASPAS** dan **TOPSIS**.
-    * **Komparasi Konsistensi:** Menampilkan tabel integrasi peringkat akhir guna memvalidasi keputusan investasi korporat secara objektif.
-
-    ### Nama Anggota Kelompok:
-    * Mirza Fazle Rabbi Syahputra - 322410013
-    * Jeremia Valerian Lumban Gaol - 322410008
 
 # --- 2. DATASET ---
 elif menu == "📂 Dataset":
@@ -141,19 +139,20 @@ elif menu == "📊 Dashboard & Analisis":
             k4.metric("Total Units Sold", f"{us:,.0f}")
             st.markdown("---")
 
-            # JAWABAN BUSINESS QUESTION 1-4
+            # PERBAIKAN STABILITAS: Penggunaan baris tunggal untuk memisahkan string f-string dari deteksi syntax error program
             st.markdown("### ❓ Hasil Evaluasi Pertanyaan Bisnis (Business Questions)")
             
-            with st.container():
-                st.markdown(f"""
-                * **BQ-1: Bagaimana tren perkembangan Total Sales bulanan sepanjang periode berjalan?** 👉 *Jawaban Analisis:* Penjualan agregat saat ini menyentuh angka kumulatif **${ts:,.0f}**. Tren bergerak fluktuatif mengikuti siklus musiman retail di Amerika Serikat, di mana titik puncak transaksi dipengaruhi oleh peluncuran produk baru dan strategi promosi berkala di masing-masing area distribusi.
-                
-                * **BQ-2: Produk manakah yang menyumbang kontribusi nilai penjualan tertinggi bagi perusahaan?** 👉 *Jawaban Analisis:* Berdasarkan komparasi volume transaksi, segmentasi kategori produk alas kaki (*Footwear*) dan pakaian olahraga (*Apparel*) bersaing ketat. Pola konsumsi pasar didominasi oleh segmen alas kaki jalanan (*Street Footwear*) yang secara konsisten mencetak margin keuntungan operasional paling tebal.
-                
-                * **BQ-3: Bagaimana efisiensi kontribusi finansial dari masing-masing metode saluran penjualan?** 👉 *Jawaban Analisis:* Pembagian kanal transaksi terbagi ke dalam saluran *In-store*, *Outlet*, dan *Online*. Transformasi digital memperlihatkan bahwa kanal *Online* mendominasi jangkauan penetrasi pasar, sementara transaksi *In-store* konvensional tetap menyumbang nilai nominal rata-rata per nota belanja paling masif.
-                
-                * **BQ-4: Bagaimana korelasi sebaran finansial antara pencapaian omzet penjualan dan laba bersih di tingkat wilayah?** 👉 *Jawaban Analisis:* Hasil visualisasi menunjukkan korelasi linear positif yang sangat kuat. Setiap peningkatan grafik pada sumbu *Total Sales* di wilayah hukum tertentu selalu diiringi dengan lonjakan proporsional pada grafik nilai *Operating Profit* dengan rata-rata batas margin profitabilitas sebesar **{am:.2%}**.
-                """)
+            st.markdown(f"**• BQ-1: Bagaimana tren perkembangan Total Sales bulanan sepanjang periode berjalan?**")
+            st.markdown(f"**Jawaban Analisis:** Penjualan agregat saat ini menyentuh angka kumulatif **${ts:,.0f}**. Tren bergerak fluktuatif mengikuti siklus musiman retail di Amerika Serikat, di mana titik puncak transaksi dipengaruhi oleh peluncuran produk baru dan strategi promosi berkala di masing-masing area distribusi.")
+            st.markdown("")
+            st.markdown(f"**• BQ-2: Produk manakah yang menyumbang kontribusi nilai penjualan tertinggi bagi perusahaan?**")
+            st.markdown(f"**Jawaban Analisis:** Berdasarkan komparasi volume transaksi, segmentasi kategori produk alas kaki (*Footwear*) dan pakaian olahraga (*Apparel*) bersaing ketat. Pola konsumsi pasar didominasi oleh segmen alas kaki jalanan (*Street Footwear*) yang secara konsisten mencetak margin keuntungan operasional paling tebal.")
+            st.markdown("")
+            st.markdown(f"**• BQ-3: Bagaimana efisiensi kontribusi finansial dari masing-masing metode saluran penjualan?**")
+            st.markdown(f"**Jawaban Analisis:** Pembagian kanal transaksi terbagi ke dalam saluran *In-store*, *Outlet*, dan *Online*. Transformasi digital memperlihatkan bahwa kanal *Online* mendominasi jangkauan penetrasi pasar, sementara transaksi *In-store* konvensional tetap menyumbang nilai nominal rata-rata per nota belanja paling masif.")
+            st.markdown("")
+            st.markdown(f"**• BQ-4: Bagaimana korelasi sebaran finansial antara pencapaian omzet penjualan dan laba bersih di tingkat wilayah?**")
+            st.markdown(f"**Jawaban Analisis:** Hasil visualisasi menunjukkan korelasi linear positif yang sangat kuat. Setiap peningkatan grafik pada sumbu *Total Sales* di wilayah hukum tertentu selalu diiringi dengan lonjakan proporsional pada grafik nilai *Operating Profit* dengan rata-rata batas margin profitabilitas sebesar **{am:.2%}**.")
             st.markdown("---")
 
             # Visualisasi Grafik
@@ -277,7 +276,7 @@ elif menu == "🏆 SPK - Metode TOPSIS":
         weighted_norm = norm_topsis * weights
 
         st.markdown("### Langkah 1: Matriks Normalisasi Terbobot (Y)")
-        st.caption("**Keterangan Fungsi:** Tabel ini berfungsi menyamakan satuan ukuran yang berbeda-beda menjadi nilai desimal yang setara. Dengan mengalikan bobot kriteria, kita dapat membandingkan pengaruh setiap kriteria secara objektif tanpa didominasi oleh salah satu kriteria yang nilai aslinya besar.")
+        st.caption("**Keterangan Fungsi:** Tabel ini berfungsi menyamakan satuan ukuran yang berbeda-beda menjadi nilai desimal yang setara. Dengan mengalikan bobot kriteria, kita dapat membandingkan pengaruh setiap kriteria secara objektif.")
         df_y = pd.DataFrame(weighted_norm, columns=['Y1 (Total Sales)', 'Y2 (Total Units Sold)', 'Y3 (Operating Profit)', 'Y4 (Variasi Margin)'])
         df_y.insert(0, 'Nama Retailer', df_matrix['Retailer'])
         st.dataframe(df_y.style.format({col: "{:.4f}" for col in df_y.columns if col != 'Nama Retailer'}), use_container_width=True)
@@ -293,7 +292,7 @@ elif menu == "🏆 SPK - Metode TOPSIS":
         st.dataframe(df_dist.style.format({'Jarak Ideal Positif (D+)': "{:.4f}", 'Jarak Ideal Negatif (D-)': "{:.4f}"}), use_container_width=True)
 
         st.markdown("### Langkah 3: Nilai Preferensi Kedekatan Akhir (Vi) & Peringkat")
-        st.caption("**Keterangan Fungsi:** Tabel ini merangkum skor preferensi akhir $V_i$ yang berkisar antara 0 hingga 1. Urutan peringkat akhir disusun secara otomatis berdasarkan nilai preferensi tertinggi ke terendah sebagai bahan pertimbangan investasi.")
+        st.caption("**Keterangan Fungsi:** Tabel ini merangkum skor preferensi akhir $V_i$ yang berkisar antara 0 hingga 1. Urutan peringkat akhir disusun secara otomatis berdasarkan nilai preferensi tertinggi ke terendah.")
         score_topsis = d_neg / (d_pos + d_neg)
         df_topsis_final = pd.DataFrame({'Nama Retailer': df_matrix['Retailer'], 'Nilai Kedekatan Preferensi (Vi)': score_topsis})
         df_topsis_final['Peringkat'] = df_topsis_final['Nilai Kedekatan Preferensi (Vi)'].rank(ascending=False, method='min').astype(int)
@@ -316,7 +315,6 @@ elif menu == "📊 Perbandingan & Rekomendasi":
         ).reset_index()
         matrix_vals = df_matrix[['C1_Sales', 'C2_Units', 'C3_Profit', 'C4_Margin']].values
         
-        # Bobot standar kalkulasi (Otomatis seimbang default 40,30,20,10)
         w = np.array([0.40, 0.30, 0.20, 0.10])
 
         # Kalkulasi WASPAS
@@ -348,18 +346,15 @@ elif menu == "📊 Perbandingan & Rekomendasi":
         st.markdown("### Tabel Komparasi Peringkat Multi-Algoritma")
         st.dataframe(df_compare[['Nama Retailer', 'Skor WASPAS', 'Rank WASPAS', 'Skor TOPSIS', 'Rank TOPSIS']], use_container_width=True)
 
-        # Pengambilan keputusan kesimpulan otomatis
         top_waspas = df_compare[df_compare['Rank WASPAS'] == 1]['Nama Retailer'].values[0]
         top_topsis = df_compare[df_compare['Rank TOPSIS'] == 1]['Nama Retailer'].values[0]
 
-        # JAWABAN BUSINESS QUESTION KE-5 (KEPUTUSAN STRATEGIS)
+        # JAWABAN BUSINESS QUESTION KE-5
         st.markdown("---")
         st.markdown("### ❓ Business Question (Keputusan Strategis Eksekutif)")
-        st.markdown(f"""
-        * **BQ-5: Berdasarkan komparasi performa operasional seluruh kriteria penilaian (omzet, volume unit, profit, dan margin), siapakah mitra retailer yang paling direkomendasikan untuk menerima program kemitraan strategis utama tahun ini agar bebas dari risiko inkonsistensi metodologi?** 
-        
-          👉 *Jawaban Analisis & Rekomendasi Direksi:* Melalui integrasi pemodelan matematis ganda (WASPAS dan TOPSIS), sistem memitigasi risiko bias dari satu algoritma tunggal. Hasil komparasi menunjukkan konsensus yang konklusif, di mana **{top_waspas}** berhasil menduduki peringkat pertama pada model WASPAS maupun TOPSIS. Hal ini membuktikan bahwa retailer tersebut tidak hanya tangguh secara akumulasi linear parametrik, namun juga memiliki profil kinerja yang paling mendekati batas ideal sempurna korporasi. Oleh karena itu, **{top_waspas}** direkomendasikan secara mutlak sebagai opsi kemitraan prioritas dengan rasio risiko operasional terendah.
-        """)
+        st.markdown(f"**• BQ-5: Berdasarkan komparasi performa operasional seluruh kriteria penilaian (omzet, volume unit, profit, dan margin), siapakah mitra retailer yang paling direkomendasikan untuk menerima program kemitraan strategis utama tahun ini agar bebas dari risiko inkonsistensi metodologi?**")
+        st.markdown(f"**Jawaban Analisis & Rekomendasi Direksi:** Melalui integrasi pemodelan matematis ganda (WASPAS dan TOPSIS), sistem memitigasi risiko bias dari satu algoritma tunggal. Hasil komparasi menunjukkan konsensus yang konklusif, di mana **{top_waspas}** berhasil menduduki peringkat pertama pada model WASPAS maupun TOPSIS. Hal ini membuktikan bahwa retailer tersebut tidak hanya tangguh secara akumulasi linear parametrik, namun juga memiliki profil kinerja yang paling mendekati batas ideal sempurna korporasi. Oleh karena itu, **{top_waspas}** direkomendasikan secara mutlak sebagai opsi kemitraan prioritas dengan rasio risiko operasional terendah.")
+        st.markdown("---")
         
         st.success(f"📌 **KESIMPULAN FINAL KORPORAT:** **{top_waspas}** adalah alternatif terbaik yang sah berdasarkan evaluasi multi-kriteria pada periode ini.")
     else:
