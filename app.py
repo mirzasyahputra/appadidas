@@ -65,16 +65,6 @@ menu = st.sidebar.radio(
     ]
 )
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 👥 Anggota Kelompok")
-with st.sidebar.container():
-    st.markdown("""
-    * **Anggota 1:** Nama Mahasiswa 1 (NIM)
-    * **Anggota 2:** Nama Mahasiswa 2 (NIM)
-    * **Anggota 3:** Nama Mahasiswa 3 (NIM)
-    * **Kelas:** Manajemen Informasi Sistem
-    """)
-st.sidebar.markdown("---")
 
 # ==========================================
 # 3. KONTEN STRUKTUR HALAMAN
@@ -90,6 +80,10 @@ if menu == "🏠 Beranda":
     * **Visualisasi Data Eksekutif:** Menjawab pertanyaan bisnis fundamental perusahaan secara tertulis dan infografis.
     * **Analisis Multi-Metode SPK:** Menyediakan modul perhitungan matematis transparan langkah demi langkah menggunakan algoritma **WASPAS** dan **TOPSIS**.
     * **Komparasi Konsistensi:** Menampilkan tabel integrasi peringkat akhir guna memvalidasi keputusan investasi korporat.
+
+    ### Anggota Kelompok:
+    * Mirza Fazle Rabbi Syahputra - 322410013
+    * Jeremia Valerian Lumban Gaol - 322410008
     """)
 
 # --- 2. DATASET ---
