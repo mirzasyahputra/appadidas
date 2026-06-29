@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 # Konfigurasi Halaman
-st.set_page_config(page_title="SPK Penjualan Adidas", page_icon="👟", layout="wide")
+st.set_page_config(page_title="SPK & Dashboard Adidas US", page_icon="👟", layout="wide")
 
 # ==========================================
 # 1. FUNGSI PEMBACAAN & PEMBERSIHAN DATA
@@ -44,7 +44,7 @@ df = None
 default_file_path = "adidas_us_sales_datasets.csv"
 
 # ==========================================
-# 2. MENU NAVIGASI SIDEBAR
+# 2. MENU NAVIGASI & KOLOM ANGGOTA KELOMPOK (PERBAIKAN 3)
 # ==========================================
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg", width=120)
 st.sidebar.markdown("---")
@@ -53,6 +53,17 @@ menu = st.sidebar.radio(
     "Pilih Halaman:",
     ["🏠 Beranda", "📂 Dataset", "📊 Dashboard & Analisis", "🏆 Keputusan (SPK)"]
 )
+
+# PERBAIKAN 3: Penambahan Kolom Nama Anggota Kelompok di Sidebar agar selalu terlihat
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 👥 Anggota Kelompok")
+with st.sidebar.container():
+    st.markdown("""
+    * **Anggota 1:** Nama Mahasiswa 1 (NIM)
+    * **Anggota 2:** Nama Mahasiswa 2 (NIM)
+    * **Anggota 3:** Nama Mahasiswa 3 (NIM)
+    * **Kelas:** Manajemen Informasi Sistem / Proyek SI
+    """)
 st.sidebar.markdown("---")
 
 if os.path.exists(default_file_path):
@@ -66,10 +77,14 @@ else:
 
 # --- HALAMAN BERANDA ---
 if menu == "🏠 Beranda":
-    st.title("👟 Sistem Pendukung Keputusan (SPK) Penjualan Adidas US")
+    st.title("👟 Sistem Pendukung Keputusan (SPK) & Dashboard Penjualan Adidas US")
     st.markdown("""
-    Selamat datang di aplikasi SPK untuk menentukan **Retailer Terbaik**.
-    Gunakan menu navigasi di sebelah kiri untuk melihat Dataset, menganalisis Dashboard visual secara interaktif, atau menjalankan perhitungan algoritma SPK secara transparan.
+    Aplikasi ini dikembangkan untuk memenuhi kebutuhan analisis performa penjualan sekaligus sebagai **Sistem Pendukung Keputusan** interaktif menggunakan multi-metode (**TOPSIS** dan **WASPAS**).
+    
+    ### 📂 Panduan Penggunaan Aplikasi:
+    1. **Menu Dataset:** Digunakan untuk memastikan data mentah (*Adidas US Sales*) telah termuat dengan benar ke dalam sistem eksekusi.
+    2. **Menu Dashboard & Analisis:** Menyajikan visualisasi interaktif yang dibangun secara khusus untuk menjawab pertanyaan bisnis (*Business Questions*) manajemen.
+    3. **Menu Keputusan (SPK):** Ruang simulasi penentuan **Retailer Terbaik** berdasarkan pembobotan kriteria dinamis dengan transparansi kalkulasi algoritma ilmiah.
     """)
 
 # --- HALAMAN DATASET ---
@@ -83,35 +98,35 @@ elif menu == "📂 Dataset":
             st.success("Data berhasil diunggah!")
             st.dataframe(df.head(100), use_container_width=True)
     else:
-        st.success("Dataset berhasil dimuat.")
+        st.success("Dataset utama berhasil dimuat dari repositori sistem.")
         st.dataframe(df, use_container_width=True)
 
-# --- HALAMAN DASHBOARD & ANALISIS ---
+# --- HALAMAN DASHBOARD & ANALISIS (PERBAIKAN 1) ---
 elif menu == "📊 Dashboard & Analisis":
     st.title("📊 Dashboard Analisis Penjualan")
     
     if df is not None:
-        st.markdown("### ⚙️ Filter Data (Multi-select)")
+        st.markdown("### ⚙️ Filter Data Eksekutif (Multi-select)")
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         
         with col_f1:
             region_opt = list(df['Region'].dropna().unique())
-            sel_region = st.multiselect("1. Pilih Region", region_opt)
+            sel_region = st.multiselect("Pilih Region", region_opt)
             
         with col_f2:
             if sel_region:
                 state_opt = list(df[df['Region'].isin(sel_region)]['State'].dropna().unique())
             else:
                 state_opt = list(df['State'].dropna().unique())
-            sel_state = st.multiselect("2. Pilih State", state_opt)
+            sel_state = st.multiselect("Pilih State", state_opt)
 
         with col_f3:
             retailer_opt = list(df['Retailer'].dropna().unique())
-            sel_retailer = st.multiselect("3. Pilih Retailer", retailer_opt)
+            sel_retailer = st.multiselect("Pilih Retailer", retailer_opt)
 
         with col_f4:
             sales_meth_opt = list(df['Sales Method'].dropna().unique())
-            sel_method = st.multiselect("4. Pilih Metode", sales_meth_opt)
+            sel_method = st.multiselect("Pilih Metode Penjualan", sales_meth_opt)
 
         filtered_df = df.copy()
         if sel_region:
@@ -124,68 +139,97 @@ elif menu == "📊 Dashboard & Analisis":
             filtered_df = filtered_df[filtered_df['Sales Method'].isin(sel_method)]
 
         if filtered_df.empty:
-            st.warning("Data kosong dengan kombinasi filter saat ini.")
+            st.warning("Data tidak ditemukan untuk kombinasi filter tersebut.")
         else:
+            # PERBAIKAN 1: Menampilkan Ringkasan Business Questions Utama sebelum Chart
             st.markdown("---")
+            with st.expander("❓ Lihat Pertanyaan Bisnis (Business Questions) yang Dijawab Halaman Ini", expanded=True):
+                st.markdown("""
+                * **BQ-01 (Tren Waktu):** Bagaimana tren fluktuasi *Total Sales* Adidas dari bulan ke bulan sepanjang periode operasional?
+                * **BQ-02 (Performa Produk):** Jenis produk Adidas apa yang menghasilkan performa *Total Sales* paling dominan di pasar?
+                * **BQ-03 (Strategi Distribusi):** Bagaimana proporsi kontribusi *Sales Method* (Online, Outlet, In-store) terhadap total pendapatan?
+                * **BQ-04 (Analisis Profitabilitas Regional):** Bagaimana korelasi sebaran antara capaian *Total Sales* dan *Operating Profit* di tingkat State?
+                """)
+            st.markdown("---")
+
+            # KPI Cards
+            st.markdown("#### 💡 Ringkasan Indikator Utama (KPI)")
             k1, k2, k3, k4 = st.columns(4)
             k1.metric("Total Sales", f"${filtered_df['Total Sales'].sum():,.0f}")
             k2.metric("Operating Profit", f"${filtered_df['Operating Profit'].sum():,.0f}")
             k3.metric("Avg Margin", f"{filtered_df['Operating Margin'].mean():.2%}")
-            k4.metric("Total Units", f"{filtered_df['Units Sold'].sum():,.0f}")
+            k4.metric("Total Units Sold", f"{filtered_df['Units Sold'].sum():,.0f}")
             st.markdown("---")
             
+            # Visualisasi Grafis Berbasis Business Questions
             c1, c2 = st.columns(2)
             with c1:
+                st.info("📊 **Jawaban BQ-01:** Tren Finansial Bulanan")
                 df_monthly = filtered_df.groupby(filtered_df['Invoice Date'].dt.to_period('M'))['Total Sales'].sum().reset_index()
                 df_monthly['Invoice Date'] = df_monthly['Invoice Date'].dt.to_timestamp()
-                fig1 = px.line(df_monthly, x='Invoice Date', y='Total Sales', title="Tren Total Sales Bulanan", markers=True)
+                fig1 = px.line(df_monthly, x='Invoice Date', y='Total Sales', title="Tren Akumulasi Total Sales Bulanan", markers=True)
                 st.plotly_chart(fig1, use_container_width=True)
                 
+                st.info("🍩 **Jawaban BQ-03:** Analisis Pangsa Metode Penjualan")
                 df_method = filtered_df.groupby('Sales Method')['Total Sales'].sum().reset_index()
-                fig3 = px.pie(df_method, names='Sales Method', values='Total Sales', title="Kontribusi Metode Penjualan", hole=0.45)
+                fig3 = px.pie(df_method, names='Sales Method', values='Total Sales', title="Kontribusi Penjualan Berdasarkan Sales Method", hole=0.45)
                 st.plotly_chart(fig3, use_container_width=True)
 
             with c2:
+                st.info("📐 **Jawaban BQ-02:** Pemetaan Kapasitas Produk")
                 df_product = filtered_df.groupby('Product')['Total Sales'].sum().reset_index()
-                fig2 = px.bar(df_product, x='Total Sales', y='Product', orientation='h', title="Total Sales per Produk", color='Total Sales', color_continuous_scale='Blues')
+                fig2 = px.bar(df_product, x='Total Sales', y='Product', orientation='h', title="Perbandingan Kinerja Finansial antar Varian Produk", color='Total Sales', color_continuous_scale='Blues')
                 st.plotly_chart(fig2, use_container_width=True)
                 
+                st.info("📈 **Jawaban BQ-04:** Pemetaan Hubungan Efisiensi Wilayah")
                 df_corr = filtered_df.groupby('State')[['Total Sales', 'Operating Profit']].sum().reset_index()
                 df_corr = df_corr.sort_values('Total Sales', ascending=False).head(10)
                 fig4 = px.bar(df_corr, x='State', y=['Total Sales', 'Operating Profit'], 
-                              barmode='group', title="Perbandingan Sales vs Profit (Top 10 State)",
-                              labels={'value': 'Jumlah ($)', 'variable': 'Metrik'})
+                              barmode='group', title="Komparasi Efisiensi Sales vs Profit (Top 10 State)",
+                              labels={'value': 'Nilai ($)', 'variable': 'Kategori Finansial'})
                 st.plotly_chart(fig4, use_container_width=True)
     else:
         st.warning("Silakan muat dataset terlebih dahulu di menu 📂 Dataset.")
 
-# --- HALAMAN SPK (RETAILER TERBAIK) ---
+# --- HALAMAN SPK (PERBAIKAN 2) ---
 elif menu == "🏆 Keputusan (SPK)":
-    st.title("🏆 SPK Penentuan Retailer Terbaik")
-    st.markdown("Sistem membandingkan kinerja Retailer menggunakan metode **TOPSIS** dan **WASPAS** berdasarkan 4 Kriteria Benefit.")
+    st.title("🏆 Sistem Pendukung Keputusan (SPK) Penentuan Retailer Terbaik")
+    
+    # PERBAIKAN 2: Penjelasan Konsep Utama SPK Sesuai Contoh Dosen
+    st.markdown("""
+    ### Evaluasi Kinerja Model SPK: TOPSIS & WASPAS
+    **Metode Penilaian Terpadu Menggunakan Pendekatan Jarak Ideal (TOPSIS) dan Kombinasi Terbobot Linear-Multiplikatif (WASPAS)**
+    
+    #### 💡 KONSEP SEDERHANA & FUNGSI MODEL
+    Sistem ini mengevaluasi kinerja seluruh unit bisnis penjualan (*Retailer*) berdasarkan akumulasi data operasional riil. Pendekatan dilakukan lewat dua model optimasi algoritma matematika:
+    * **TOPSIS (Technique for Order of Preference by Similarity to Ideal Solution):** Memilih alternatif yang memiliki jarak terdekat dari solusi ideal positif dan jarak terjauh dari solusi ideal negatif.
+    * **WASPAS (Weighted Aggregated Sum Product Assessment):** Penggabungan komparasi *Weighted Sum Model* (WSM) untuk penilaian linier dan *Weighted Product Model* (WPM) untuk penilaian multiplikatif demi menjaga stabilitas perangkingan dari anomali data operasional ekstrem.
+    """)
+    st.markdown("---")
     
     if df is not None:
-        # IMPLEMENTASI FORM INPUT BOBOT DENGAN TOMBOL UBAH
+        # Input Bobot Kriteria
         with st.form("panel_bobot"):
-            st.markdown("### 🎛️ Atur Bobot Kriteria")
-            st.markdown("Silakan isi angka bobot kepentingan di bawah ini, lalu klik tombol **Terapkan** untuk menghitung hasil.")
+            st.markdown("#### 🎛️ Pusat Manajemen Kriteria SPK (C1 - C4)")
+            st.markdown("Atur parameter bobot nilai kepentingan (skala bebas, sistem akan melakukan normalisasi bobot secara otomatis):")
             
             b1, b2, b3, b4 = st.columns(4)
-            w1 = b1.number_input("C1: Total Sales", min_value=1, max_value=100, value=40)
-            w2 = b2.number_input("C2: Total Units Sold", min_value=1, max_value=100, value=30)
-            w3 = b3.number_input("C3: Operating Profit", min_value=1, max_value=100, value=20)
-            w4 = b4.number_input("C4: Avg Margin", min_value=1, max_value=100, value=10)
+            w1 = b1.number_input("C1: Total Sales (Benefit)", min_value=1, max_value=100, value=40)
+            w2 = b2.number_input("C2: Total Units Sold (Benefit)", min_value=1, max_value=100, value=30)
+            w3 = b3.number_input("C3: Operating Profit (Benefit)", min_value=1, max_value=100, value=20)
+            w4 = b4.number_input("C4: Average Operating Margin (Benefit)", min_value=1, max_value=100, value=10)
             
-            # Tombol Ubah yang dicari
-            tombol_terapkan = st.form_submit_button("💾 Terapkan & Hitung Perubahan")
+            tombol_terapkan = st.form_submit_button("💾 Terapkan Bobot & Hitung Perubahan")
 
-        # Perhitungan hanya berjalan setelah form di-submit atau saat halaman pertama kali dibuka
         total_w = w1 + w2 + w3 + w4
         weights = np.array([w1, w2, w3, w4]) / total_w
 
-        # TAHAP 1: MATRIKS KEPUTUSAN AWAL
-        st.markdown("---")
-        st.markdown("### 📊 Tahap 1: Matriks Keputusan Awal")
+        # PERBAIKAN 2 - LANGKAH 1
+        st.markdown("### 📊 LANGKAH 1: MATRIKS KEPUTUSAN AKTUAL (X)")
+        st.caption("""
+        **Keterangan Fungsi:** Tabel di bawah merangkum seluruh akumulasi performa kinerja riil yang diekstraksi langsung dari pangkalan data penjualan masing-masing alternatif Retailer. Nilai-nilai aktual ini bertindak sebagai pondasi utama kalkulasi keputusan di tahap berikutnya.
+        """)
+        
         df_matrix = df.groupby('Retailer').agg(
             C1_Sales=('Total Sales', 'sum'),
             C2_Units=('Units Sold', 'sum'),
@@ -202,26 +246,29 @@ elif menu == "🏆 Keputusan (SPK)":
 
         matrix_vals = df_matrix[['C1_Sales', 'C2_Units', 'C3_Profit', 'C4_Margin']].values
 
-        # TAHAP 2: MATRIKS NORMALISASI
-        st.markdown("### 🧮 Tahap 2: Matriks Normalisasi")
+        # PERBAIKAN 2 - LANGKAH 2
+        st.markdown("### 🧮 LANGKAH 2: MATRIKS NORMALISASI LINEAR (R)")
+        st.caption("""
+        **Keterangan Fungsi:** Langkah ini mentransformasikan angka riil dari matriks keputusan awal ke dalam besaran skala seragam terstandarisasi (0 hingga 1). Mengingat seluruh kriteria (C1-C4) bertindak sebagai kriteria **Benefit**, nilai dihitung dengan membagi performa Retailer terkait dengan nilai maksimum di kolom tersebut. Hal ini menyetarakan satuan dimensi yang berbeda agar adil saat diperbandingkan.
+        """)
         
         norm_topsis = matrix_vals / np.sqrt((matrix_vals**2).sum(axis=0))
-        df_norm_topsis = pd.DataFrame(norm_topsis, columns=['C1 (Norm)', 'C2 (Norm)', 'C3 (Norm)', 'C4 (Norm)'])
+        df_norm_topsis = pd.DataFrame(norm_topsis, columns=['C1 (TOPSIS Norm)', 'C2 (TOPSIS Norm)', 'C3 (TOPSIS Norm)', 'C4 (TOPSIS Norm)'])
         df_norm_topsis.insert(0, 'Retailer', df_matrix['Retailer'])
 
         norm_waspas = matrix_vals / matrix_vals.max(axis=0)
-        df_norm_waspas = pd.DataFrame(norm_waspas, columns=['C1 (Norm)', 'C2 (Norm)', 'C3 (Norm)', 'C4 (Norm)'])
+        df_norm_waspas = pd.DataFrame(norm_waspas, columns=['C1 (WASPAS Norm)', 'C2 (WASPAS Norm)', 'C3 (WASPAS Norm)', 'C4 (WASPAS Norm)'])
         df_norm_waspas.insert(0, 'Retailer', df_matrix['Retailer'])
 
         c_norm1, c_norm2 = st.columns(2)
         with c_norm1:
-            st.markdown("**Normalisasi TOPSIS**")
+            st.markdown("**Normalisasi Pembagi Kuadrat (Eksklusif TOPSIS)**")
             st.dataframe(df_norm_topsis.style.format({col: "{:.4f}" for col in df_norm_topsis.columns if col != 'Retailer'}), use_container_width=True)
         with c_norm2:
-            st.markdown("**Normalisasi WASPAS**")
+            st.markdown("**Normalisasi Pembagi Maksimum (Eksklusif WASPAS)**")
             st.dataframe(df_norm_waspas.style.format({col: "{:.4f}" for col in df_norm_waspas.columns if col != 'Retailer'}), use_container_width=True)
 
-        # KALKULASI ALGORITMA
+        # Proses Kalkulasi Inti Nilai Preferensi
         weighted_norm = norm_topsis * weights
         ideal_pos = weighted_norm.max(axis=0)
         ideal_neg = weighted_norm.min(axis=0)
@@ -234,8 +281,12 @@ elif menu == "🏆 Keputusan (SPK)":
         wpm = np.prod(norm_waspas_safe ** weights, axis=1)
         score_waspas = 0.5 * wsm + 0.5 * wpm
 
-        # TAHAP 3: HASIL AKHIR
-        st.markdown("### 🥇 Tahap 3: Hasil Akhir & Perbandingan Ranking")
+        # PERBAIKAN 2 - LANGKAH 3
+        st.markdown("### 🥇 LANGKAH 3: SKOR AKHIR & PERINGKAT REKOMENDASI (QI / PREFERENSI)")
+        st.caption("""
+        **Keterangan Fungsi:** Hasil konvergensi evaluasi dari kedua metode disajikan di bawah ini. Skor preferensi berkisar antara 0 hingga 1. Alternatif Retailer dengan perolehan skor tertinggi merepresentasikan kedudukan operasional bisnis yang paling unggul, tangguh, dan konsisten terhadap sasaran target manajemen korporat.
+        """)
+        
         df_final = pd.DataFrame({
             'Retailer': df_matrix['Retailer'],
             'Skor TOPSIS': score_topsis,
@@ -254,7 +305,7 @@ elif menu == "🏆 Keputusan (SPK)":
         top_topsis = df_final[df_final['Ranking TOPSIS'] == 1]['Retailer'].values[0]
         top_waspas = df_final[df_final['Ranking WASPAS'] == 1]['Retailer'].values[0]
         
-        st.success(f"**KESIMPULAN BIROKRASI SPK:** Berdasarkan nilai bobot aktif, Retailer terbaik menurut metode TOPSIS adalah **{top_topsis}**, dan menurut metode WASPAS adalah **{top_waspas}**.")
+        st.success(f"📌 **KESIMPULAN REKOMENDASI SISTEM:** Berdasarkan pemrosesan model matriks keputusan, alternatif Retailer dengan kinerja terbaik menurut komparasi model adalah **{top_topsis}** (Metode TOPSIS) dan **{top_waspas}** (Metode WASPAS).")
 
     else:
          st.warning("Silakan muat dataset terlebih dahulu di menu 📂 Dataset.")
